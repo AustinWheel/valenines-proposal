@@ -77,7 +77,7 @@ export default function Home() {
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 p-8">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-8 p-8">
         <ReactConfetti
           key={confettiKey}
           width={windowSize.width}
@@ -87,7 +87,7 @@ export default function Home() {
           style={{ position: 'fixed', top: 0, left: 0, zIndex: 100 }}
         />
         <div 
-          className="relative w-full max-w-6xl h-[40svh]"
+          className="relative w-full max-w-6xl h-full"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
