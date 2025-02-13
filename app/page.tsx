@@ -1,101 +1,198 @@
+"use client";
+
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import ReactConfetti from "react-confetti";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [noButtonScale, setNoButtonScale] = useState(1);
+  const [currentSadGif, setCurrentSadGif] = useState(1);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [currentImage, setCurrentImage] = useState(2);
+
+  const handleNoClick = () => {
+    const scaleOptions = [1, 0.75, 0.5, 0.25, 0]
+    setCurrentSadGif(prev => prev + 1);
+    setNoButtonScale(scaleOptions[currentSadGif]);
+  };
+
+  const totalImages = 15;
+
+  const handlePrevImages = () => {
+    setCurrentImage((prev) => (prev === 1 ? totalImages : prev - 1))
+  };
+
+  const handleNextImages = () => {
+    setCurrentImage((prev) => (prev === totalImages ? 1 : prev + 1))
+  };
+
+  const handleTouchStart = (e: any) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: any) => {
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNextImages();
+    }
+    if (isRightSwipe) {
+      handlePrevImages();
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 p-8">
+        <ReactConfetti
+          key={confettiKey}
+          width={windowSize.width}
+          height={windowSize.height}
+          numberOfPieces={200}
+          recycle={false}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 100 }}
+        />
+        <div 
+          className="relative w-full max-w-6xl h-[40svh]"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="relative flex justify-center items-center">
+
+            {/* Prev Image */}
+            <div
+              key={currentImage === 1 ? totalImages : currentImage - 1}
+              className="relative aspect-[2/3] w-3/6 transform transition-all duration-300 ease-in-out hover:scale-105 -rotate-12 -mr-20 z-0 drop-shadow-[0_5px_10px_rgba(255,255,255,0.20)]"
+              onClick={handlePrevImages}
+            >
+              <Image
+                src={`/us${currentImage === 1 ? totalImages : currentImage - 1}.jpg`}
+                alt={`Couple photo ${currentImage === 1 ? totalImages : currentImage - 1}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+
+            {/* Middle Image */}
+            <div
+              key={currentImage}
+              className="relative aspect-[2/3] w-2/3 transform transition-all duration-300 ease-in-out hover:scale-105 z-10 drop-shadow-[0_5px_10px_rgba(255,255,255,0.20)]"
+            >
+              <Image
+                src={`/us${currentImage}.jpg`}
+                alt={`Couple photo ${currentImage}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+
+            {/* Next Image */}
+            <div
+              key={currentImage === totalImages ? 1 : currentImage + 1}
+              className="relative aspect-[2/3] w-1/2 transform transition-all duration-300 ease-in-out hover:scale-105 rotate-12 -ml-20 z-0 drop-shadow-[0_5px_10px_rgba(255,255,255,0.20)]"
+              onClick={handleNextImages}
+            >
+              <Image
+                src={`/us${currentImage === totalImages ? 1 : currentImage + 1}.jpg`}
+                alt={`Couple photo ${currentImage === totalImages ? 1 : currentImage + 1}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <h1 
+          onClick={() => setConfettiKey(prev => prev + 1)}
+          className="text-4xl font-bold text-center cursor-pointer hover:scale-105 transition-all"
+          style={{
+            WebkitTextStroke: '2px #ff69b4',
+            color: 'white',
+            textShadow: '0 0 10px #ff69b4'
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          💖 Yayyyy!!! 💖
+        </h1>
+        <p className="text-2xl font-semibold">I love you 宝宝</p>
+        <p className="text-2xl font-semibold">我爱你宝宝</p>
+        <div className="grid grid-cols-3 gap-4 w-full max-w-4xl">
+          {[1, 2, 3].map((num) => (
+            <div key={num} className="relative aspect-square w-full">
+              <Image
+                src={`/happy${num}.gif`}
+                alt={`Happy gif ${num}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 p-8">
+      <div className="relative aspect-square w-full max-w-lg">
+        <Image
+          src={currentSadGif === 1 ? "/happy1.gif" : `/sad${currentSadGif - 1}.gif`}
+          alt="Valentine gif"
+          fill
+          className="object-cover rounded-lg"
+        />
+      </div>
+      <h2 className="text-3xl text-white font-bold text-center">Will you be my valentine?</h2>
+      <div className="flex gap-4">
+        <button
+          onClick={() => setShowSuccess(true)}
+          className="px-8 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all font-semibold text-lg"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Yes
+        </button>
+        {noButtonScale >= 0.25 && (
+          <button
+            onClick={handleNoClick}
+            style={{ transform: `scale(${noButtonScale})` }}
+            className="px-8 py-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-all font-semibold text-lg"
+          >
+            No
+          </button>
+        )}
+      </div>
     </div>
   );
 }
